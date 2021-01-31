@@ -48,7 +48,12 @@ def test1():
 
 # implement this function
 def multiples_of_3_and_5(n):
-    pass
+    sum = 0
+    for i in range(1,n):
+        if i % 3 == 0 or i % 5 == 0:
+            sum += i
+    return sum
+
 
 # (3 points)
 def test2():
@@ -61,7 +66,13 @@ def test2():
 # EXERCISE 3
 #################################################################################
 def integer_right_triangles(p):
-    pass
+    sum = 0
+    for a in range (1, int(p/2)):
+        for b in range (1,int(p/2)):
+            c = p - a - b
+            if a*a + b*b == c*c:
+                sum += 1
+    return sum / 2
 
 def test3():
     tc = unittest.TestCase()
@@ -75,7 +86,34 @@ def test3():
 
 # implement this function
 def gen_pattern(chars):
-    pass
+    lines = 2 * len(chars) -1
+    charLine = 4 * len(chars) - 3
+    numLettersOffset = 0
+    increasing = True
+    result = ""
+    for row in range (0, lines):
+        line = buildLine(chars, row, numLettersOffset, charLine)
+        result = result + line + '\n'
+        if numLettersOffset == len(chars)-1:
+            increasing = not increasing
+        if increasing:
+            numLettersOffset += 1
+        else:
+            numLettersOffset -= 1
+    print (result)
+    
+def buildLine(chars, rowNumber, numLettersOffset, charLine):
+    leftLine = ""
+    for x in range(0,numLettersOffset + 1):
+        leftLine = leftLine + chars[len(chars)-1 -x]
+    rightLine = leftLine[::-1]
+    rightLine = rightLine[1:]
+    line = leftLine + rightLine
+    line = '.'.join(line)
+    line = line.center(charLine, '.')
+    return line
+
+    
 
 def test4():
     tc = unittest.TestCase()
