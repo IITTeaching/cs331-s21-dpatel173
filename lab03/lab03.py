@@ -17,7 +17,17 @@ def mysort(lst: List[T], compare: Callable[[T, T], int]) -> List[T]:
     right element, 1 if the left is larger than the right, and 0 if the two
     elements are equal.
     """
-    pass
+    for i in range(1, len(lst)):
+        temp = i
+        for j in range(i-1,-1,-1):
+            if compare(lst[temp], lst[j]) == -1:
+                tempValue = lst[temp]
+                lst[temp] = lst[j]
+                lst[j] = tempValue
+                temp -= 1
+    return lst
+    
+
 
 def mybinsearch(lst: List[T], elem: S, compare: Callable[[T, S], int]) -> int:
     """
@@ -27,7 +37,28 @@ def mybinsearch(lst: List[T], elem: S, compare: Callable[[T, S], int]) -> int:
     position of the first (leftmost) match for elem in lst. If elem does not
     exist in lst, then return -1.
     """
-    pass
+    low = 0
+    high = len(lst) - 1
+    mid = int(high/2)
+    while low <= high:
+        if compare(lst[mid],elem) == -1:
+            lastIndexSearched = mid
+            low = mid
+            mid = int((1+high+low)/2)
+            if lastIndexSearched == mid:
+                return -1
+        elif compare(lst[mid],elem) == 1:
+            lastIndexSearched = mid
+            high = mid
+            mid = int((1+high+low)/2)
+            if lastIndexSearched == mid:
+                return -1
+        elif compare(lst[mid],elem) == 0:
+            firstIndex = mid
+            while compare(lst[firstIndex],elem) == 0:
+                firstIndex -= 1
+            return firstIndex + 1
+    return -1
 
 class Student():
     """Custom class to test generic sorting and searching."""
@@ -105,6 +136,24 @@ def test1_5():
 #################################################################################
 # EXERCISE 2
 #################################################################################
+def compare(str1, str2):
+        if str1 < str2:
+            return -1
+        elif str1 > str2:
+            return 1
+        else:
+            return 0
+
+def compareBin(arrayString, q):
+    if len(q) == len(arrayString):
+        return compare(arrayString, q)
+    elif len(q) < len(arrayString):
+        return compare(arrayString[:len(q)], q)
+    else:
+        return compare(arrayString, q)
+
+
+
 class PrefixSearcher():
 
     def __init__(self, document, k):
@@ -112,7 +161,17 @@ class PrefixSearcher():
         Initializes a prefix searcher using a document and a maximum
         search string length k.
         """
-        pass
+        self.k = k
+        substrings = []
+        if len(document) >= k:
+            end = k
+        else:
+            end = len(document)
+        for beginning in range (0, len(document)):
+            substrings.append(document[beginning:end])
+            if end < len(document):
+                end += 1
+        self.prefixes = mysort(substrings, compare)
 
     def search(self, q):
         """
@@ -121,7 +180,13 @@ class PrefixSearcher():
         length up to n). If q is longer than n, then raise an
         Exception.
         """
-        pass
+        if len(q) > self.k:
+            raise Exception("Q is longer than n")
+        if mybinsearch(self.prefixes, q, compareBin) != -1:
+            return True
+        else:
+            return False
+
 
 # 30 Points
 def test2():
@@ -157,26 +222,64 @@ def test2_2():
 #################################################################################
 # EXERCISE 3
 #################################################################################
+class Bucket():
+    def __init__(self, index, string):
+        self.index = index
+        self.string = string
+
+    def __str__(self):
+        return str(self.index) + ":" + self.string  
+
+
+def compareBucket(bucket1, bucket2):
+        if bucket1.string < bucket2.string:
+            return -1
+        elif bucket1.string > bucket2.string:
+            return 1
+        else:
+            return 0
+
+def compareBinBucket(bucket, word):
+    if bucket.string == word:
+        return 0
+    if bucket.string[0:len(word)] == word:
+        return 0
+    if bucket.string == word[0:len(bucket.string)]:
+        return 0
+    if bucket.string > word:
+        return 1
+    if bucket.string < word:
+        return -1
+
 class SuffixArray():
 
     def __init__(self, document: str):
         """
         Creates a suffix array for document (a string).
         """
-        pass
-
+        self.suffixArr = []
+        for i in range (0, len(document)):
+            self.suffixArr.append(Bucket(i,document[i:]))
+        
+        self.suffixArr = mysort(self.suffixArr, compareBucket)
 
     def positions(self, searchstr: str):
         """
         Returns all the positions of searchstr in the documented indexed by the suffix array.
         """
-        pass
+        answer = []
+        index = mybinsearch(self.suffixArr, searchstr, compareBinBucket)
+        if index != -1:
+            answer.append(index)
+            return answer
+        return answer
+        
 
     def contains(self, searchstr: str):
         """
         Returns true of searchstr is coontained in document.
         """
-        pass
+        return len(self.positions(searchstr)) != 0
 
 # 40 Points
 def test3():
