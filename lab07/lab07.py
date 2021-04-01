@@ -4,6 +4,12 @@ from unittest import TestCase
 ################################################################################
 # EXTENSIBLE HASHTABLE
 ################################################################################
+class Node:
+    def __init__(self, key, value, next=None):
+        self.key = key 
+        self.value = value
+        self.next = next
+
 class ExtensibleHashTable:
 
     def __init__(self, n_buckets=1000, fillfactor=0.5):
@@ -14,18 +20,77 @@ class ExtensibleHashTable:
 
     def find_bucket(self, key):
         # BEGIN_SOLUTION
+        hashValue = hash(key)
+        bucket = hashValue % self.n_buckets
+        curr = self.buckets[bucket]
+        while curr is not None:
+            if curr.key == key:
+                return curr
+            curr = curr.next
+        return None
         # END_SOLUTION
 
     def __getitem__(self,  key):
         # BEGIN_SOLUTION
+        node = self.find_bucket(key)
+        if node is None:
+            raise KeyError
+        return node.value
         # END_SOLUTION
 
     def __setitem__(self, key, value):
         # BEGIN_SOLUTION
+        hashValue = hash(key)
+        bucket = hashValue % self.n_buckets
+        if self.buckets[bucket] is None:
+            self.buckets[bucket] = Node(key, value)
+            self.nitems += 1
+            if self.nitems > self.n_buckets * self.fillfactor:
+                self.resize()
+        else:
+            curr = self.buckets[bucket]
+            while curr.next is not None:
+                if curr.key == key:
+                    curr.value = value
+                    return
+                curr = curr.next
+            if curr.key == key:
+                curr.value = value
+                return
+            curr.next = Node(key, value)
+            self.nitems += 1
+            if self.nitems > self.n_buckets * self.fillfactor:
+                self.resize()
         # END_SOLUTION
+
+    def resize (self):
+        oldData = self.buckets
+        self.n_buckets = self.n_buckets * 2
+        self.buckets = [None] * self.n_buckets
+        self.nitems = 0
+        for bucket in oldData:
+            node = bucket
+            while node is not None:
+                self.__setitem__(node.key, node.value)
+                node = node.next
+
+
 
     def __delitem__(self, key):
         # BEGIN SOLUTION
+        hashValue = hash(key)
+        bucket = hashValue % self.n_buckets
+        curr = self.buckets[bucket]
+        if curr.key == key:
+            self.buckets[bucket] = curr.next
+            self.nitems -= 1
+            return
+        while curr.next is not None:
+            if curr.next.key == key:
+                curr.next = curr.next.next
+                self.nitems -= 1
+                return
+            curr = curr.next
         # END SOLUTION
 
     def __contains__(self, key):
@@ -43,6 +108,32 @@ class ExtensibleHashTable:
 
     def __iter__(self):
         ### BEGIN SOLUTION
+        for bucket in self.buckets:
+            node = bucket
+            while node is not None:
+                yield node.key
+                node = node.next
+
+        ### END SOLUTION
+
+    def iter_values(self):
+        ### BEGIN SOLUTION
+        for bucket in self.buckets:
+            node = bucket
+            while node is not None:
+                yield node.value
+                node = node.next
+
+        ### END SOLUTION
+
+    def iter_items(self):
+        ### BEGIN SOLUTION
+        for bucket in self.buckets:
+            node = bucket
+            while node is not None:
+                yield (node.key, node.value)
+                node = node.next
+
         ### END SOLUTION
 
     def keys(self):
@@ -50,10 +141,12 @@ class ExtensibleHashTable:
 
     def values(self):
         ### BEGIN SOLUTION
+        return self.iter_values()
         ### END SOLUTION
 
     def items(self):
         ### BEGIN SOLUTION
+        return self.iter_items()
         ### END SOLUTION
 
     def __str__(self):
