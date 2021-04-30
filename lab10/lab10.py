@@ -15,6 +15,11 @@ class AVLTree:
 
         def rotate_left(self):
             ### BEGIN SOLUTION
+
+            #opposite of rotate right
+            n = self.right
+            self.val, n.val = n.val, self.val
+            self.right, n.right, self.left, n.left = n.right, n.left, n, self.left
             ### END SOLUTION
 
         @staticmethod
@@ -31,18 +36,80 @@ class AVLTree:
     @staticmethod
     def rebalance(t):
         ### BEGIN SOLUTION
+        leftHeight = AVLTree.Node.height(t.left)
+        rightHeight = AVLTree.Node.height(t.right)
+
+        if leftHeight > rightHeight + 1:
+            # try in case t.left is None
+            try:
+                leftLeftHeight = AVLTree.Node.height(t.left.left)
+                leftRightHeight = AVLTree.Node.height(t.left.right)
+                if leftRightHeight >= leftLeftHeight + 1:
+                    t.left.rotate_left()
+            except:
+                pass
+            t.rotate_right()
+        elif rightHeight > leftHeight + 1:
+            # try in case t.right is None
+            try:
+                rightLeftHeight = AVLTree.Node.height(t.right.left)
+                rightRightHeight = AVLTree.Node.height(t.right.right)
+                if rightLeftHeight >= rightRightHeight + 1:
+                    t.right.rotate_right()
+            except:
+                pass
+            t.rotate_left()
         ### END SOLUTION
 
     def add(self, val):
         assert(val not in self)
         ### BEGIN SOLUTION
+        self.root = self.insert(self.root, val)
         ### END SOLUTION
+    
+    def insert(self, node, val):
+        if node is None:
+            return AVLTree().Node(val)
+        if val > node.val:
+            node.right = self.insert(node.right, val)
+        if val < node.val:
+            node.left = self.insert(node.left, val)
+        
+        #do last so we go up the tree
+        AVLTree.rebalance(node)
+        return node
 
     def __delitem__(self, val):
         assert(val in self)
         ### BEGIN SOLUTION
+        self.root = self.delete(self.root, val)
         ### END SOLUTION
 
+    def delete(self, node, val):
+        if node is None:
+            return None
+        if node.val > val:
+            node.left = self.delete(node.left, val)
+        if node.val < val:
+            node.right = self.delete(node.right, val)
+        if node.val == val:
+            if node.right is None and node.left is not None:
+                return node.left
+            elif node.right is not None and node.left is None:
+                return node.right
+            elif node.right is None and node.left is None:
+                return None
+            else:
+                tmpNode = node.right
+                while tmpNode.left != None:
+                    tmpNode = tmpNode.left
+                node.val = tmpNode.val   
+                node.right = self.delete(node.right, tmpNode.val)
+        
+        #do last so it recurively goes up tree
+        AVLTree.rebalance(node)
+        return node
+        
     def __contains__(self, val):
         def contains_rec(node):
             if not node:
