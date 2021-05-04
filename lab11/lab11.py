@@ -6,18 +6,47 @@ def quicksort(lst,pivot_fn):
 
 def qsort(lst,low,high,pivot_fn):
     ### BEGIN SOLUTION
+    if (low < high):
+        pivot = pivot_fn(lst, low, high)
+        qsort(lst, low, pivot, pivot_fn)
+        qsort(lst, pivot + 1, high, pivot_fn)
     ### END SOLUTION
+    
+def piv_common(i,j,lst,p):
+    while (True):
+        while (lst[i] < p):
+            i += 1
+        while (lst[j] > p):
+            j -= 1
+        if (i >= j):
+            return j
+        temp = lst[i]
+        lst[i] = lst[j]
+        lst[j] = temp
 
 def pivot_first(lst,low,high):
     ### BEGIN SOLUTION
+    i = low
+    j = high
+    p = lst[low]
+    return piv_common(i, j, lst, p)
     ### END SOLUTION
 
 def pivot_random(lst,low,high):
     ### BEGIN SOLUTION
+    i = low
+    j = high
+    p = random.choice(lst[low:high+1])
+    return piv_common(i, j, lst, p)
     ### END SOLUTION
 
 def pivot_median_of_three(lst,low,high):
     ### BEGIN SOLUTION
+    i = low
+    j = high
+    values = [lst[low], lst[(low + high) // 2], lst[high]]
+    p = sorted(values)[1] 
+    return piv_common(i, j, lst, p)
     ### END SOLUTION
 
 ################################################################################
